@@ -1,0 +1,63 @@
+{{- /*
+Copyright 2025 Tsung-Han Chang. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/}}
+
+{{- if .Values.sharedStorage.pvc.enabled }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ include "devpod.nfs.name" . }}
+  namespace: {{ include "devpod.namespace" . }}
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 30Gi
+  volumeName: {{ include "devpod.nfs.name" . }}
+  storageClassName: {{ .Values.sharedStorage.storageClass }}
+{{- end }}
+{{- if .Values.sharedStorage.pv.enabled }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  annotations:
+    pv.kubernetes.io/provisioned-by: {{ .Values.sharedStorage.storageClass }}
+  name: {{ include "devpod.nfs.name" . }}
+spec:
+  capacity:
+    storage: 1Pi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: {{ .Values.sharedStorage.storageClass }}
+  {{- if eq .Values.k8sEnvironment "cloud" }}
+  csi:
+    driver: blob.csi.azure.com
+    readOnly: false
+    volumeHandle: "{{ .Values.sharedStorage.blob.storageAccount }}_{{ .Values.sharedStorage.blob.container }}"
+    volumeAttributes:
+      mountPermissions: "0777"
+      resourceGroup: "{{ .Values.sharedStorage.blob.resourceGroup }}"
+      storageAccount: "{{ .Values.sharedStorage.blob.storageAccount }}"
+      containerName: "{{ .Values.sharedStorage.blob.container }}"
+      protocol: "{{ .Values.sharedStorage.blob.protocol }}"
+  {{- else if eq .Values.k8sEnvironment "on-prem" }}
+  nfs:
+    server: {{ .Values.sharedStorage.nfsprov.nfs.server }}
+    path: {{ .Values.sharedStorage.nfsprov.nfs.path }}
+  {{- end }}
+{{- end }}

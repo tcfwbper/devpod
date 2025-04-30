@@ -1,0 +1,119 @@
+# Copyright 2025 Tsung-Han Chang. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+
+nameOverride:
+fullnameOverride:
+
+global:
+  image:
+    # pullPolicy for devpod and other devtools
+    pullPolicy: Always
+
+# where is your k8s environment?
+# this value should be "on-prem" or "cloud"
+k8sEnvironment: on-prem
+
+sharedStorage:
+  # enable pv and pvc if you are installing shared storage
+  pv:
+    enabled: false
+  pvc:
+    enabled: false
+  # storageClass that had been installed
+  storageClass:
+  # "on-prem" devpod is dependent of "nfs-subdir-external-provisioner"
+  # please install "nfs-subdir-external-provisioner" first
+  # link: https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner
+  # fill out "nfsprov.nfs.server" and "nfsprov.nfs.path" if k8sEnvironment is "on-prem"
+  nfsprov:
+    nfs:
+      server:
+      path:
+  # "cloud" devpod is dependent of "Azure Storage Account"
+  # please create a storage account first
+  # fill out "blob" section if k8sEnvironment is "cloud"
+  blob:
+    resourceGroup:
+    storageAccount:
+    container:
+    protocol: nfs
+
+# if you are installing devpod, fill out this section
+devpod:
+  enabled: false
+  imageName: "tcfwbper/dev-env"
+  # this image is for demonstrating. please build your own image and change the ubuntu credential
+  imageTag: "v0.1.0-demo"
+  # we use "devpod.developer" and "devpod.environment" to name the release and related resources
+  # just fill out your name here
+  developer: devpod
+  # this value can be dev, exp, stage, or prod
+  environment: dev
+  ubuntu:
+    # what's your ubuntu user?
+    # please fill out the username you set when you built the dev-env image
+    # if you are using a demo image, the user should be "user"
+    user: "user"
+    # this array are ports that you want to expose
+    # "22" is exposed for ssh connection
+    # you can add more ports here
+    exposedPorts:
+    - 22
+  service:
+    type: NodePort # ClusterIP, NodePort
+    # if you are using "NodePort", the number of this array should be consistent with the number of "devpod.ubuntu.exposedPorts"
+    # we will one-to-one expose the port from exposedPorts to nodePorts
+    # the valid range of each number of nodePorts is 30000-32767
+    nodePorts:
+    - 30022
+
+# we will prepare bashrc, bash_profile, bash_aliases, and CLI color definition files when you initialize your workspace
+initWorkspace:
+  enabled: false
+  imageName: "tcfwbper/dev-env"
+  imageTag: "v0.1.0-init-workspace"
+
+# will you use docker in devpod?
+# install docker first if k8sEnvironment is "on-prem". we will mount the docker socket to devpod
+# if k8sEnvironment is "cloud", just turn on this flag. we will deploy a docker:dind on your k8s
+dockerDaemon:
+  enabled: false
+
+# do you want to install redis for development?
+redis:
+  enabled: false
+  imageName: "redis"
+  imageTag: "7.4.1-alpine"
+
+# do you want to install mssql for development?
+# remember to change your mssql password
+mssql:
+  enabled: false
+  imageName: mcr.microsoft.com/mssql/server
+  imageTag: 2022-latest
+  password: 
+
+# do you want to install postgresql for development?
+# remember to change your postgres user and password
+postgresql:
+  enabled: false
+  imageName: bitnami/postgresql
+  imageTag: 14
+  user: 
+  password: 
+
+# this flag allows your devpod to be deployed on spot node
+spot:
+  enabled: true
