@@ -50,6 +50,8 @@ bash scripts/deploy-dev-pod.sh
 ## SSH to devpod on cloud through ingress-nginx
 If you are deploying devpod on-premisely, skip this step.
 
+Prerequisite: [ingress-nginx](https://github.com/kubernetes/ingress-nginx)
+
 1. Ensure that the configmap named `tcp-services` exists and that the `<port number>` is forwarded to the correct service.
 ```
 apiVersion: v1
