@@ -9,8 +9,8 @@ Maintain our environment is a critical task for everyone. It requires some extra
 Please refer to the [Dockerfile](docker/dev-env/Dockerfile) in dev-env. Though we don't need to revise any ENV sections of Dockerfile, we explain what these environment variables are for extension:
 | Env | Description |
 | ------------- | ------------- |
-| ACCOUNT | This is your user name. Docker will create a sudoer named by this value for you. Please use this user while developing, or our product might fail because of permissions. |
-| PASSWORD  | This is the password of your user and root. You must change this value, or your dev-env would be exposed to potential threats. |
+| UBUNTU_ACCOUNT | This is your user name. Docker will create a sudoer named by this value for you. Please use this user while developing, or our product might fail because of permissions. |
+| UBUNTU_PWD  | This is the password of your user and root. You must change this value, or your dev-env would be exposed to potential threats. |
 | USER_ID | You can assign your user ID of your Ubuntu user. However, if you change user ID, you might loss your permissions to access your workspace. This is why we don't recommend revising this value when you upgrade your dev-env image. |
 | GROUP_ID | You can assign your group ID of your Ubuntu user. For the same reason, we don't recommend revising this value when you upgrade your dev-env image. |
 
