@@ -37,6 +37,17 @@ spec:
         value: "spot"
         effect: "NoSchedule"
       {{- end }}
+      initContainers:
+        - command:
+          - sh
+          - -c
+          - sync && sleep 2
+          image: busybox
+          name: nfs-sync
+          volumeMounts:
+            - name: {{ include "devpod.nfs.volume" . }}
+              mountPath: "/var/lib/postgresql/data"
+              subPath: devpod/{{ .Values.devpod.developer }}-{{ .Values.devpod.environment }}/postgresql
       containers:
         - name: postgres
           image: "{{ .Values.postgresql.imageName }}:{{ .Values.postgresql.imageTag}}"
@@ -44,6 +55,11 @@ spec:
             - name: POSTGRES_USER
               value: {{ .Values.postgresql.user }}
             - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.devpod.developer }}-{{ .Values.devpod.environment }}-secret
+                  key: PSQL_PASSWORD
+            - name: POSTGRESQL_POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.devpod.developer }}-{{ .Values.devpod.environment }}-secret
