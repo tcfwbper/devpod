@@ -25,7 +25,9 @@ bash scripts/build-dev-env.sh
 ```
 
 ## Setup storage
-Prerequisite: [nfs-subdir-external-provisioner](https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner) if you are deploying devpod on-premisely.
+Prerequisite: 
+- [nfs-subdir-external-provisioner](https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner) if you are deploying devpod `on-premisely`.
+- On the other hand, if you are deploying devpod on `cloud`, please deploy storage account for nfs storage on Azure and fill out the environment variables in `scripts/azure-deploy-storage.sh`.
 ```
 # on-prem
 bash scripts/on-prem-deploy-storage.sh

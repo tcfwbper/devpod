@@ -64,7 +64,7 @@ spec:
             - containerPort: 1433
           volumeMounts:
             - name: {{ include "devpod.nfs.volume" . }}
-              mountPath: "/var/opt/mssql/data"
+              mountPath: "/var/opt/mssql"
               subPath: devpod/{{ .Values.devpod.developer }}-{{ .Values.devpod.environment }}/mssql
       volumes:
         - name: {{ include "devpod.nfs.volume" . }}

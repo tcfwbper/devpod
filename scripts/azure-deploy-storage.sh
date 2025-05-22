@@ -18,14 +18,15 @@ cd "$(dirname "$(realpath "$0")")/.."
 
 RESOURCE_GROUP=""
 STORAGE_ACCOUNT=""
+CONTAINRT_NAME="devpod-nfs"
 
 helm upgrade devpod-storage -n devpod --install --create-namespace \
     --set k8sEnvironment="cloud" \
     --set sharedStorage.pv.enabled=true \
     --set sharedStorage.pvc.enabled=true \
     --set sharedStorage.storageClass="azureblob-nfs-premium" \
-    --set sharedStorage.blob.resourceGroup=$RESOURCE_GROUP \
-    --set sharedStorage.blob.storageAccount=$STORAGE_ACCOUNT \
-    --set sharedStorage.blob.container="devpod-nfs" \
+    --set sharedStorage.blob.resourceGroup="$RESOURCE_GROUP" \
+    --set sharedStorage.blob.storageAccount="$STORAGE_ACCOUNT" \
+    --set sharedStorage.blob.container="$CONTAINRT_NAME" \
     --set sharedStorage.blob.protocol="nfs" \
     helm-charts/devpod/
