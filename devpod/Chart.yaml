@@ -1,0 +1,24 @@
+# Copyright Tsung-Han Chang. All Rights Reserved.
+# SPDX-License-Identifier: APACHE-2.0
+
+annotations:
+  category: Infrastructure
+  licenses: Apache-2.0
+apiVersion: v2
+# Please make sure that version and appVersion are always the same.
+appVersion: 1.0.0
+dependencies:
+- name: common
+  repository: oci://registry-1.docker.io/bitnamicharts
+  tags:
+  - bitnami-common
+  version: 2.x.x
+description: An useful Helm Chart for devpod deployment.
+maintainers:
+  - name: Tsung-Han Chang. All Rights Reserved.
+    url: https://github.com/tcfwbper/devpod.git
+name: devpod
+sources:
+  - https://github.com/tcfwbper/devpod.git
+type: application
+version: 1.0.0

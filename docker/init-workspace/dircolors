@@ -1,0 +1,76 @@
+# Configuration file for dircolors.
+
+# Below are the default colors that may be overridden.
+# COLOR is the color to use for the file type.
+# The first letter is the foreground color, and the second is the background color.
+# The foreground color can be:
+#   30=black       31=red         32=green      33=yellow
+#   34=blue        35=magenta     36=cyan       37=white
+# The background color can be:
+#   40=black       41=red         42=green      43=yellow
+#   44=blue        45=magenta     46=cyan       47=white
+
+# Reset color
+RESET 00
+
+# Normal files
+FILE 00
+
+# Directory
+DIR 01;34
+
+# Symbolic links
+LINK 01;36
+
+# Socket
+SOCK 01;35
+
+# Named pipe
+FIFO 40;33
+
+# Executable
+EXEC 01;32
+
+# Block device
+BLOCK 40;33;01
+
+# Character device
+CHAR 40;33;01
+
+# Directory with write permission
+DIR_WRITE 01;34;42
+
+# Directory with read permission
+DIR_READ 01;34;43
+
+# Directory with execute permission
+DIR_EXEC 01;34;41
+
+# Image files
+IMG 01;35
+
+# Archive files
+ARCHIVE 01;31
+
+# Text files
+TEXT 00;37
+
+# Python files
+PYTHON 01;32
+
+# Markdown files
+MARKDOWN 00;33
+
+# Add other file types as needed
+
+# Apply colors for common extensions
+# e.g., color files with .sh extension as executable
+*.sh 01;32
+*.py 01;32
+*.txt 00;37
+*.jpg 01;35
+*.png 01;35
+*.tar.gz 01;31
+*.zip 01;31
+
+# Add more custom file types as needed
