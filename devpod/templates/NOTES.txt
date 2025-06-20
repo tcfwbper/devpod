@@ -1,0 +1,66 @@
+CHART NAME: {{ .Chart.Name }}
+CHART VERSION: {{ .Chart.Version }}
+APP VERSION: {{ .Chart.AppVersion }}
+
+{{- $servicePort := 22 -}}
+
+** Please be patient while the chart is being deployed **
+
+{{- if .Values.diagnosticMode.enabled }}
+The chart has been deployed in diagnostic mode. All probes have been disabled and the command has been overwritten with:
+
+  command: {{- include "common.tplvalues.render" (dict "value" .Values.diagnosticMode.command "context" $) | nindent 4 }}
+  args: {{- include "common.tplvalues.render" (dict "value" .Values.diagnosticMode.args "context" $) | nindent 4 }}
+
+Get the list of pods by executing:
+
+  kubectl get pods --namespace {{ .Release.Namespace }} -l app.kubernetes.io/instance={{ .Release.Name }}
+
+Access the pod you want to debug by executing
+
+  kubectl exec --namespace {{ .Release.Namespace }} -ti <NAME OF THE POD> -- bash
+
+{{- else }}
+
+{{- if contains "NodePort" .Values.service.type }}
+
+To Access the DevPod:
+
+1. Obtain the NodePort IP and ports:
+
+    export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+    export NODE_PORT_SSH=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[?(@.name=='ssh')].nodePort}" services {{ include "common.names.fullname" . }})
+    
+2. Connect to the remote host:
+
+    echo "ssh -p $NODE_PORT_SSH {{ .Values.auth.username }}@$NODE_IP"
+
+{{- else if contains "LoadBalancer" .Values.service.type }}
+
+To Access the DevPod:
+
+1. Obtain the LoadBalancer IP:
+
+NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+      Watch the status with: 'kubectl get svc --namespace {{ .Release.Namespace }} -w {{ include "common.names.fullname" . }}'
+    
+    export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "common.names.fullname" . }} --template '{{range .status.loadBalancer.ingress}}{{.ip}}{{end}}')
+    
+2. Connect to the remote host:
+
+    echo "ssh {{ .Values.auth.username }}@$SERVICE_IP"
+
+{{- else if contains "ClusterIP"  .Values.service.type }}
+
+To Access the DevPod:
+
+1. Create a port-forward to the DevPod ssh port:
+
+    kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "common.names.fullname" . }} <your_port>:{{ $servicePort }} &
+    
+2. Connect to the remote host:
+    
+    echo "ssh -p <your_port> {{ .Values.auth.username }}@0.0.0.0"
+
+{{- end }}
+{{- end }}

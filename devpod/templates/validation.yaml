@@ -1,0 +1,6 @@
+{{- /*
+Copyright Tsung-Han Chang. All Rights Reserved.
+SPDX-License-Identifier: APACHE-2.0
+*/}}
+
+{{- include "devpod.validateValues" . }}
