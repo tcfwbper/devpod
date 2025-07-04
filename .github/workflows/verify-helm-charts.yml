@@ -1,4 +1,4 @@
-name: Verify Helm Chart Values
+name: Verify Helm Charts
 
 on:
   push:
@@ -17,7 +17,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r test/requirements.txt
 
-      - name: Verify helm chart values
+      - name: Verify helm charts
         run: |
           python3 test/verify_helm_charts.py
     
