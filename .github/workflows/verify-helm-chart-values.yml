@@ -2,9 +2,9 @@ name: Verify Helm Chart Values
 
 on:
   push:
-    branches: [ feat/ci/verify_chart_values ]
+    branches: [ main ]
   pull_request:
-    branches: [ feat/ci/verify_chart_values ]
+    branches: [ main ]
 
 jobs:
   build-and-test:
