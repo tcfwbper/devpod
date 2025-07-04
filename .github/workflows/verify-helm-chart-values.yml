@@ -18,5 +18,7 @@ jobs:
         run: pip install -r test/requirements.txt
 
       - name: Verify helm chart values
-        run: python3 test/verify_helm_chart_values.py
+        run: |
+          cd $GITHUB_WORKSPACE
+          python3 test/verify_helm_chart_values.py
     
