@@ -1,0 +1,14 @@
+devpod:
+  chart: 1.0.0
+  checklist:
+    image.registry: docker.io
+    image.repository: tcfwbper/dev-env
+    image.tag: 1.0.0
+    initWorkspace.image.registry: docker.io
+    initWorkspace.image.repository: tcfwbper/dev-env
+    initWorkspace.image.tag: 1.0.0-init-workspace
+    docker.image.registry: docker.io
+    docker.image.repository: docker
+    docker.image.tag: dind
+    containerPorts.ssh: 22
+    service.ports.ssh: 22
