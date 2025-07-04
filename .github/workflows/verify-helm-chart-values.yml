@@ -1,0 +1,22 @@
+name: Verify Helm Chart Values
+
+on:
+  push:
+    branches: [ feat/ci/verify_chart_values ]
+  pull_request:
+    branches: [ feat/ci/verify_chart_values ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    container:
+      image: python:3.10-slim
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: pip install -r test/requirements.txt
+
+      - name: Verify helm chart values
+        run: python3 test/verify_helm_chart_values.py
+    
