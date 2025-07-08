@@ -51,7 +51,7 @@ spec:
     {{- if .Values.service.portEnabled }}
     - name: {{ .Values.service.portNames.ssh }}
       port: {{ .Values.service.ports.ssh }}
-      targetPort: ssh
+      targetPort: {{ .Values.service.ports.ssh }}
       {{- if (eq .Values.service.type "ClusterIP") }}
       nodePort: null
       {{- else if and (or (eq .Values.service.type "NodePort") (eq .Values.service.type "LoadBalancer")) (not (empty .Values.service.nodePorts.ssh)) }}
