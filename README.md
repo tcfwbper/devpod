@@ -30,14 +30,14 @@ Please refer to `scripts/deploy-devpod.sh`. Fill out the environment variables a
 To access your devpod:
 ```
 # ClusterIP
-kubectl port-forward --namespace <your_ns> svc/<your_svc> <your_port>:22
-ssh -p <your_port> <your_username>@0.0.0.0
+kubectl port-forward --namespace <your_ns> svc/<your_svc> <available_port>:22
+ssh -p <available_port> <your_username>@0.0.0.0
 
 # NodePort
 ssh -p <your_nodeport> <your_username>@<your_node_ip>
 
 # LoadBalancer
-SERVICE_IP=$(kubectl get svc --namespace rbmq rbmq-rabbitmq-chart --template '{{range .status.loadBalancer.ingress}}{{.ip}}{{end}}')
+SERVICE_IP=$(kubectl get svc --namespace <your_ns> <your_svc> --template '{{range .status.loadBalancer.ingress}}{{.ip}}{{end}}')
 ssh <your_username>@$SERVICE_IP
 ```
 
