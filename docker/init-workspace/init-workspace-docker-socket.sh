@@ -1,4 +1,3 @@
-#!/bin/bash
 # Copyright 2025 Tsung-Han Chang. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,15 +13,25 @@
 # limitations under the License.
 # ==============================================================================
 
-cd "$(dirname "$(realpath "$0")")/.."
+chmod 755 /tmp/workspace
 
-## env: image
-CR="docker.io"
-IMAGE_NAME="tcfwbper/dev-env"
-IMAGE_TAG="1.0.0-init-workspace"
-
-## Build the Docker image
-docker build -t $CR/$IMAGE_NAME:$IMAGE_TAG -f docker/init-workspace/init-workspace.Dockerfile docker/init-workspace
-## Push the Docker image
-docker login ${CR}
-docker push $CR/$IMAGE_NAME:$IMAGE_TAG
+# bashrc
+if [ ! -f "/tmp/workspace/.bashrc" ]; then
+    cp .bashrc /tmp/workspace/.bashrc
+    chmod 666 /tmp/workspace/.bashrc
+fi
+# bash_profile
+if [ ! -f "/tmp/workspace/.bash_profile" ]; then
+    cp .bash_profile /tmp/workspace/.bash_profile
+    chmod 666 /tmp/workspace/.bash_profile
+fi
+# bash_aliases
+if [ ! -f "/tmp/workspace/.bash_aliases" ]; then
+    cp .bash_aliases /tmp/workspace/.bash_aliases
+    chmod 666 /tmp/workspace/.bash_aliases
+fi
+# dircolors
+if [ ! -f "/tmp/workspace/.dircolors" ]; then
+    cp .dircolors /tmp/workspace/.dircolors
+    chmod 666 /tmp/workspace/.dircolors
+fi

@@ -19,10 +19,10 @@ cd "$(dirname "$(realpath "$0")")/.."
 ## env: image
 CR="docker.io"
 IMAGE_NAME="tcfwbper/dev-env"
-IMAGE_TAG="1.0.0-init-workspace"
+IMAGE_TAG="1.0.0-init-workspace-docker-socket"
 
 ## Build the Docker image
-docker build -t $CR/$IMAGE_NAME:$IMAGE_TAG -f docker/init-workspace/init-workspace.Dockerfile docker/init-workspace
+docker build -t $CR/$IMAGE_NAME:$IMAGE_TAG -f docker/init-workspace/init-workspace-docker-socket.Dockerfile docker/init-workspace
 ## Push the Docker image
 docker login ${CR}
 docker push $CR/$IMAGE_NAME:$IMAGE_TAG
