@@ -75,6 +75,11 @@ while true; do
   fi
 done
 if [[ $ENABLE_DOCKER == "yes" || $ENABLE_DOCKER == "y" ]]; then
+  ENABLE_DOCKER="true"
+else
+  ENABLE_DOCKER="false"
+fi
+if [[ $ENABLE_DOCKER == "true" ]]; then
   while true; do
     echo "Select Docker mode:"
     echo "  1) Use dind (default)"
@@ -90,11 +95,11 @@ if [[ $ENABLE_DOCKER == "yes" || $ENABLE_DOCKER == "y" ]]; then
     fi
   done
   if [[ $DOCKER_MODE == "1" ]]; then
-    echo "Using host docker socket."
-    USE_HOST_SOCKET=true
-  else
     echo "Using Docker-in-Docker."
     USE_HOST_SOCKET=false
+  else
+    echo "Using host docker socket."
+    USE_HOST_SOCKET=true
   fi
 fi
 if [[ -z $USE_HOST_SOCKET ]]; then
