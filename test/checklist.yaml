@@ -1,5 +1,5 @@
 devpod:
-  chart: 1.0.0
+  chart: 1.1.0
   checklist:
     image.registry: docker.io
     image.repository: tcfwbper/dev-env
