@@ -1,6 +1,5 @@
 # devpod
 
-[![Version](https://img.shields.io/badge/Version-1.0.0-blue)](#)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue)](#)
 [![Helm](https://img.shields.io/badge/Helm-0F1689?logo=helm&logoColor=fff)](#)
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-326CE5?logo=kubernetes&logoColor=fff)](#)
