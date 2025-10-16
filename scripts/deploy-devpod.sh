@@ -112,4 +112,6 @@ helm upgrade $RELEASE oci://ghcr.io/tcfwbper/helm/devpod --version $CHART_VERSIO
     --set auth.username=$USERNAME \
     --set auth.password=$PASSWORD \
     --set service.type=$SERVICE_TYPE \
-    --set service.nodePorts.ssh=$SSH_NODEPORT
+    --set service.nodePorts.ssh=$SSH_NODEPORT \
+    --set docker.enabled=$ENABLE_DOCKER \
+    --set docker.useHostSocket=$USE_HOST_SOCKET
