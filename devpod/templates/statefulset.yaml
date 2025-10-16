@@ -87,7 +87,7 @@ spec:
       enableServiceLinks: {{ .Values.enableServiceLinks }}
       initContainers:
         - name: init-workspace
-          image: {{ include "devpod.initWorkspace.image" . }}
+          image: {{ if .Values.docker.useHostSocket }}{{ include "devpod.initWorkspace.dockerSocketImage" . }}{{ else }}{{ include "devpod.initWorkspace.image" . }}{{ end }}
           imagePullPolicy: {{ .Values.initWorkspace.image.pullPolicy | quote }}
           securityContext: {{- .Values.initWorkspace.containerSecurityContext | toYaml | nindent 12 }}
           {{- if .Values.initWorkspace.resources }}
@@ -135,6 +135,17 @@ spec:
                     chown {{ .Values.auth.username }} /home/{{ .Values.auth.username }}
                     chgrp {{ .Values.auth.username }} /home/{{ .Values.auth.username }}
                     echo "{{ .Values.auth.username }}:${UBUNTU_PASSWORD}" | chpasswd
+                    {{- if and (.Values.docker.enabled) (.Values.docker.useHostSocket) }}
+                    GID=$(ls -n "/var/run/docker.sock" | awk '{print $4}')
+                    if getent group docker > /dev/null; then
+                        groupdel docker
+                        echo "the old docker group was deleted."
+                    fi
+                    groupadd -g "$GID" docker
+                    echo "the docker group with GID $GID was created."
+                    usermod -aG docker {{ .Values.auth.username }}
+                    echo "Added {{ .Values.auth.username }} to the docker group with GID $GID."
+                    {{- end }}
                     {{- include "devpod.packages" . | nindent 20 }}
                     {{- if .Values.lifecycleHooks.postStart }}
                     {{ .Values.lifecycleHooks.postStart.exec.command | join " && " }}
@@ -200,6 +211,10 @@ spec:
               {{- if .Values.persistence.subPath }}
               subPath: {{ .Values.persistence.subPath }}
               {{- end }}
+            {{- if and (.Values.docker.enabled) (.Values.docker.useHostSocket) }}
+            - name: docker-socket-volume
+              mountPath: /var/run/docker.sock
+            {{- end }}
             {{- if .Values.extraVolumeMounts }}
             {{- include "common.tplvalues.render" (dict "value" .Values.extraVolumeMounts "context" $) | nindent 12 }}
             {{- end }}
@@ -215,7 +230,7 @@ spec:
             - name: custom-init-scripts-secret
               mountPath: /docker-entrypoint-initdb.d/init-scripts-secret
             {{- end }}
-        {{- if .Values.docker.enabled }}
+        {{- if and (.Values.docker.enabled) (not .Values.docker.useHostSocket) }}
         - name: docker-daemon
           image: {{ include "devpod.dockerDaemon.image" . }}
           imagePullPolicy: {{ .Values.docker.image.pullPolicy | quote }}
@@ -242,6 +257,12 @@ spec:
         {{- include "common.tplvalues.render" (dict "value" .Values.sidecars "context" $) | nindent 8 }}
         {{- end }}
       volumes:
+        {{- if and (.Values.docker.enabled) (.Values.docker.useHostSocket) }}
+        - name: docker-socket-volume
+          hostPath:
+            path: /var/run/docker.sock
+            type: Socket
+        {{- end }}
         {{- if .Values.initScripts }}
         - name: custom-init-scripts
           configMap:
@@ -271,7 +292,7 @@ spec:
             claimName: {{ tpl . $ }}
             {{- end }}
         {{- end }}
-        {{- if .Values.docker.enabled }}
+        {{- if and (.Values.docker.enabled) (not .Values.docker.useHostSocket) }}
         {{- if not .Values.docker.persistence.enabled }}
         - name: docker-storage
           emptyDir: {}
@@ -312,7 +333,7 @@ spec:
         selector: {{- include "common.tplvalues.render" (dict "value" .Values.persistence.selector "context" $) | nindent 10 }}
         {{- end -}}
     {{- end }}
-    {{- if and (.Values.docker.enabled) (.Values.docker.persistence.enabled) (not .Values.docker.persistence.existingClaim) }}
+    {{- if and (.Values.docker.enabled) (not .Values.docker.useHostSocket) (.Values.docker.persistence.enabled) (not .Values.docker.persistence.existingClaim) }}
     - apiVersion: v1
       kind: PersistentVolumeClaim
       metadata:

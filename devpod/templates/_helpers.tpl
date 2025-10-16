@@ -20,6 +20,13 @@ Return the proper image name (for the init container image whose tag is with suf
 {{- end -}}
 
 {{/*
+Return the proper image name (for the init container image whose tag is with suffix "init-workspace-docker-socket")
+*/}}
+{{- define "devpod.initWorkspace.dockerSocketImage" -}}
+{{ include "common.images.image" (dict "imageRoot" .Values.initWorkspace.dockerSocketImage "global" .Values.global) }}
+{{- end -}}
+
+{{/*
 Return the Docker-In-Docker image name
 */}}
 {{- define "devpod.dockerDaemon.image" -}}

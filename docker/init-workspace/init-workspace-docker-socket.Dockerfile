@@ -1,4 +1,3 @@
-#!/bin/bash
 # Copyright 2025 Tsung-Han Chang. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,15 +13,14 @@
 # limitations under the License.
 # ==============================================================================
 
-cd "$(dirname "$(realpath "$0")")/.."
+FROM busybox
 
-## env: image
-CR="docker.io"
-IMAGE_NAME="tcfwbper/dev-env"
-IMAGE_TAG="1.0.0-init-workspace"
+WORKDIR /tmp/workspace_tmp
 
-## Build the Docker image
-docker build -t $CR/$IMAGE_NAME:$IMAGE_TAG -f docker/init-workspace/init-workspace.Dockerfile docker/init-workspace
-## Push the Docker image
-docker login ${CR}
-docker push $CR/$IMAGE_NAME:$IMAGE_TAG
+COPY init-workspace-docker-socket.sh init-workspace-docker-socket.sh
+COPY bashrc .bashrc
+COPY bash_profile .bash_profile
+COPY bash_aliases .bash_aliases
+COPY dircolors .dircolors
+
+ENTRYPOINT ["sh", "-c", "/tmp/workspace_tmp/init-workspace-docker-socket.sh"]

@@ -1,5 +1,5 @@
 devpod:
-  chart: 1.0.0
+  chart: 1.1.0
   checklist:
     image.registry: docker.io
     image.repository: tcfwbper/dev-env
@@ -7,6 +7,9 @@ devpod:
     initWorkspace.image.registry: docker.io
     initWorkspace.image.repository: tcfwbper/dev-env
     initWorkspace.image.tag: 1.0.0-init-workspace
+    initWorkspace.dockerSocketImage.registry: docker.io
+    initWorkspace.dockerSocketImage.repository: tcfwbper/dev-env
+    initWorkspace.dockerSocketImage.tag: 1.0.0-init-workspace-docker-socket
     docker.image.registry: docker.io
     docker.image.repository: docker
     docker.image.tag: dind
