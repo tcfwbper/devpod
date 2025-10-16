@@ -24,7 +24,7 @@ We assume the following infrastructures are installed.
 1. storageclass: If there is no proper storageclass installed, you can run `scripts/deploy-storageclass.sh` to have one.
 
 ## QuickStart
-Please refer to `scripts/deploy-devpod.sh`. Fill out the environment variables and just run it. Then, try accessing the devpod through ssh.
+Please just run `scripts/deploy-devpod.sh` and fill out the arguments. Then, try accessing the devpod through ssh.
 
 To access your devpod:
 ```
