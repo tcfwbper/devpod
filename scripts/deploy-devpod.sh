@@ -43,8 +43,14 @@ while true; do
 done
 
 # username
-echo -e "Fill out your ${RED}devpod username${NC}."
-read -p "Username: " USERNAME
+while true; do
+  echo -e "Fill out your ${RED}devpod username${NC}."
+  read -p "Username: " USERNAME
+  if [[ -n $USERNAME ]]; then
+      echo "Username: $USERNAME."
+      break
+  fi
+done
 
 # password
 while true; do
@@ -53,10 +59,10 @@ while true; do
     echo
     read -sp "Retype password: " PASSWORD_CHECK
     echo
-    if [[ $PASSWORD == $PASSWORD_CHECK ]]; then
+    if [[ $PASSWORD == $PASSWORD_CHECK && -n $PASSWORD ]]; then
       break
     fi
-    echo "Password mismatch."
+    echo "Password mismatch or not defined."
 done
 
 # nodeport
