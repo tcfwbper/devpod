@@ -111,7 +111,7 @@ spec:
       containers:
         - name: devpod
           image: {{ if eq .Values.operatingSystem "alpine" }}{{ include "devpod.alpine.image" . }}{{ else }}{{ include "devpod.ubuntu.image" . }}{{ end }}
-          imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+          imagePullPolicy: {{ if eq .Values.operatingSystem "alpine" }}{{ .Values.alpine.image.pullPolicy | quote }}{{ else }}{{ .Values.ubuntu.image.pullPolicy | quote }}{{ end }}
           {{- if .Values.containerSecurityContext.enabled }}
           securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.containerSecurityContext "context" $) | nindent 12 }}
           {{- end }}

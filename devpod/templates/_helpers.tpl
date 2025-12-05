@@ -37,7 +37,7 @@ Return the Docker-In-Docker image name
 Return the proper Docker Image Registry Secret Names
 */}}
 {{- define "devpod.imagePullSecrets" -}}
-{{ include "common.images.renderPullSecrets" (dict "images" (list .Values.image .Values.initWorkspace.image) "context" $) }}
+{{ include "common.images.renderPullSecrets" (dict "images" (list .Values.ubuntu.image .Values.alpine.image .Values.initWorkspace.image) "context" $) }}
 {{- end -}}
 
 {{/*
