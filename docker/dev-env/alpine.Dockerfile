@@ -60,7 +60,9 @@ RUN cp /usr/share/zoneinfo/$TZ /etc/localtime && \
 RUN addgroup -g $GROUP_ID $ALPINE_ACCOUNT && \
     adduser -D -h /home/$ALPINE_ACCOUNT -s /bin/bash -G $ALPINE_ACCOUNT -u $USER_ID $ALPINE_ACCOUNT && \
     echo "${ALPINE_ACCOUNT}:${ALPINE_PWD}" | chpasswd && \
-    echo "${ALPINE_ACCOUNT} ALL=(ALL) ALL" >> /etc/sudoers
+    echo "${ALPINE_ACCOUNT} ALL=(ALL) ALL" >> /etc/sudoers && \
+    adduser $ALPINE_ACCOUNT wheel && \
+    echo "%wheel ALL=(ALL) ALL" >> /etc/sudoers
 
 ## install docker-compose
 RUN curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && \
