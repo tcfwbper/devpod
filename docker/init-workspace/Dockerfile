@@ -23,4 +23,4 @@ COPY bash_profile .bash_profile
 COPY bash_aliases .bash_aliases
 COPY dircolors .dircolors
 
-ENTRYPOINT ["sh", "-c", "/tmp/workspace_tmp/init-workspace.sh"]
+ENTRYPOINT ["/tmp/workspace_tmp/init-workspace.sh"]

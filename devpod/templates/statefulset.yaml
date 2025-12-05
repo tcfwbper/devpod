@@ -90,7 +90,8 @@ spec:
           image: {{ include "devpod.initWorkspace.image" . }}
           {{- if and (.Values.docker.enabled) (not .Values.docker.useHostSocket) }}
           args:
-          - --docker-host "tcp://0.0.0.0:2375"
+          - --docker-host
+          - tcp://0.0.0.0:2375
           {{- end }}
           imagePullPolicy: {{ .Values.initWorkspace.image.pullPolicy | quote }}
           securityContext: {{- .Values.initWorkspace.containerSecurityContext | toYaml | nindent 12 }}
