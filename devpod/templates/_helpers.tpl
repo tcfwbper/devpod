@@ -6,10 +6,17 @@ SPDX-License-Identifier: APACHE-2.0
 {{/* vim: set filetype=mustache: */}}
 
 {{/*
-Return the proper DevPod image name
+Return the proper DevPod image name for Ubuntu development environments
 */}}
-{{- define "devpod.image" -}}
-{{ include "common.images.image" (dict "imageRoot" .Values.image "global" .Values.global) }}
+{{- define "devpod.ubuntu.image" -}}
+{{ include "common.images.image" (dict "imageRoot" .Values.ubuntu.image "global" .Values.global) }}
+{{- end -}}
+
+{{/*
+Return the proper DevPod image name for Alpine development environments
+*/}}
+{{- define "devpod.alpine.image" -}}
+{{ include "common.images.image" (dict "imageRoot" .Values.alpine.image "global" .Values.global) }}
 {{- end -}}
 
 {{/*
@@ -17,13 +24,6 @@ Return the proper image name (for the init container image whose tag is with suf
 */}}
 {{- define "devpod.initWorkspace.image" -}}
 {{ include "common.images.image" (dict "imageRoot" .Values.initWorkspace.image "global" .Values.global) }}
-{{- end -}}
-
-{{/*
-Return the proper image name (for the init container image whose tag is with suffix "init-workspace-docker-socket")
-*/}}
-{{- define "devpod.initWorkspace.dockerSocketImage" -}}
-{{ include "common.images.image" (dict "imageRoot" .Values.initWorkspace.dockerSocketImage "global" .Values.global) }}
 {{- end -}}
 
 {{/*
@@ -69,7 +69,7 @@ Get the password key to be retrieved from DevPod secret.
     {{- if and .Values.auth.existingPasswordSecret .Values.auth.existingSecretPasswordKey -}}
         {{- printf "%s" (tpl .Values.auth.existingSecretPasswordKey $) -}}
     {{- else -}}
-        {{- printf "ubuntu-password" -}}
+        {{- printf "devpod-password" -}}
     {{- end -}}
 {{- end -}}
 
@@ -89,6 +89,7 @@ Compile all warnings into a single message, and call fail.
 */}}
 {{- define "devpod.validateValues" -}}
 {{- $messages := list -}}
+{{- $messages := append $messages (include "devpod.validateValues.operatingSystem" .) -}}
 {{- $messages := append $messages (include "devpod.validateValues.username" .) -}}
 {{- $messages := append $messages (include "devpod.validateValues.password" .) -}}
 {{- $messages := without $messages "" -}}
@@ -96,6 +97,17 @@ Compile all warnings into a single message, and call fail.
 
 {{- if $message -}}
 {{-   printf "\nVALUES VALIDATION:\n%s" $message | fail -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Validate values of devpod - operatingSystem
+*/}}
+{{- define "devpod.validateValues.operatingSystem" -}}
+{{- if and (ne .Values.operatingSystem "ubuntu") (ne .Values.operatingSystem "alpine") }}
+devpod: operatingSystem
+    Unsupported Operating System detected.
+    The value "operatingSystem" must be either "ubuntu" or "alpine".
 {{- end -}}
 {{- end -}}
 
@@ -142,13 +154,16 @@ Returns the available value for certain key in an existing secret (if it exists)
 Returns packages that will be installed
 */}}
 {{- define "devpod.packages" -}}
-{{- if .Values.packages.apt }}
+{{- if and (.Values.packages.apt) (eq .Values.operatingSystem "ubuntu") }}
 DEBIAN_FRONTEND=noninteractive
 apt-get update
 apt-get install -y {{- range .Values.packages.apt }} {{ . | quote }}{{ end }} || true
 apt-get clean
 rm -rf /var/lib/apt/lists/*
 unset DEBIAN_FRONTEND
+{{- else if and (.Values.packages.apk) (eq .Values.operatingSystem "alpine") }}
+apk update
+apk add --no-cache {{- range .Values.packages.apk }} {{ . | quote }}{{ end }} || true
 {{- end }}
 {{- if .Values.packages.pip }}
 pip install --no-cache-dir {{- range .Values.packages.pip }} {{ . | quote }}{{ end }} || true
