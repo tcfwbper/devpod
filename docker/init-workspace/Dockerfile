@@ -17,10 +17,10 @@ FROM busybox
 
 WORKDIR /tmp/workspace_tmp
 
-COPY init-workspace-docker-socket.sh init-workspace-docker-socket.sh
+COPY init-workspace.sh init-workspace.sh
 COPY bashrc .bashrc
 COPY bash_profile .bash_profile
 COPY bash_aliases .bash_aliases
 COPY dircolors .dircolors
 
-ENTRYPOINT ["sh", "-c", "/tmp/workspace_tmp/init-workspace-docker-socket.sh"]
+ENTRYPOINT ["sh", "/tmp/workspace_tmp/init-workspace.sh"]

@@ -13,72 +13,80 @@
 # limitations under the License.
 # ==============================================================================
 
-FROM ubuntu:22.04
+FROM alpine:3.23.0
 
 ## Password
 ARG PWD_ARG
 
-## install package with non-interactive mode
-ENV DEBIAN_FRONTEND=noninteractive
-ENV TZ=Asia/Taipei
 ## env: security
-## Not need to change user accounthere.
-## We will modify them at runtime to ensure security and flexibility.
-ENV UBUNTU_ACCOUNT="user" \
-    UBUNTU_PWD=$PWD_ARG \
-    ## To keep the consistency of permissions, do not change USER_ID and GROUP_ID casually.
+ENV ALPINE_ACCOUNT="user" \
+    ALPINE_PWD=$PWD_ARG \
     USER_ID="1001" \
     GROUP_ID="1001"
+
 ## env: version of tools
 ENV DOCKER_COMPOSE_VERSION="v2.29.7" \
-    PYTHON_PACKAGE_NAME="python3.10" \
     KUBECTL_VERSION="v1.31.1" \
-    K9S_VERSION="v0.50.2"
+    K9S_VERSION="v0.50.6" \
+    TZ=Asia/Taipei
 
-## install: apt packages
-RUN apt update && apt install -y \
+## install: apk packages
+RUN apk add --no-cache \
     sudo \
     vim \
     curl \
+    bash \
     net-tools \
-    iputils-ping \
+    iputils \
     gettext \
     openssh-server \
-    docker.io \
-    git
+    docker-cli \
+    git \
+    shadow \
+    tzdata
 
 ## install python
-RUN apt install -y software-properties-common && \
-    add-apt-repository -y ppa:deadsnakes/ppa && \
-    apt update && \
-    apt install -y $PYTHON_PACKAGE_NAME python3-pip
+RUN apk add --no-cache \
+    python3 \
+    py3-pip \
+    python3-dev \
+    py3-virtualenv
+
+## setup timezone
+RUN cp /usr/share/zoneinfo/$TZ /etc/localtime && \
+    echo $TZ > /etc/timezone
 
 ## account: user
-RUN groupadd -g $GROUP_ID $UBUNTU_ACCOUNT && \
-    useradd -rm -d /home/$UBUNTU_ACCOUNT -s /bin/bash -G sudo -u $USER_ID -g $GROUP_ID $UBUNTU_ACCOUNT && \
-    echo "${UBUNTU_ACCOUNT}:${UBUNTU_PWD}" | chpasswd
+RUN addgroup -g $GROUP_ID $ALPINE_ACCOUNT && \
+    adduser -D -h /home/$ALPINE_ACCOUNT -s /bin/bash -G $ALPINE_ACCOUNT -u $USER_ID $ALPINE_ACCOUNT && \
+    echo "${ALPINE_ACCOUNT}:${ALPINE_PWD}" | chpasswd && \
+    echo "${ALPINE_ACCOUNT} ALL=(ALL) ALL" >> /etc/sudoers && \
+    adduser $ALPINE_ACCOUNT wheel && \
+    echo "%wheel ALL=(ALL) ALL" >> /etc/sudoers
 
 ## install docker-compose
 RUN curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && \
     chmod +x /usr/local/bin/docker-compose
+
 ## install: kubectl
 RUN curl -LO "https://dl.k8s.io/release/$KUBECTL_VERSION/bin/linux/amd64/kubectl" && \
     install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl && \
     rm kubectl
+
 ## install: k9s
 RUN curl -LO https://github.com/derailed/k9s/releases/download/$K9S_VERSION/k9s_Linux_amd64.tar.gz && \
     tar -zxvf k9s_Linux_amd64.tar.gz && \
     chmod +x k9s && \
     mv k9s /usr/local/bin && \
-    ## housekeeping
-    rm LICENSE && \
-    rm README.md && \
-    rm k9s_Linux_amd64.tar.gz
+    rm LICENSE README.md k9s_Linux_amd64.tar.gz
 
 ## setup: ssh
-RUN mkdir /var/run/sshd && \
-    sed -i "s/#PasswordAuthentication yes/PasswordAuthentication yes/" /etc/ssh/sshd_config
+RUN ssh-keygen -A && \
+    mkdir -p /run/sshd && \
+    sed -i "s/#PasswordAuthentication yes/PasswordAuthentication yes/" /etc/ssh/sshd_config && \
+    sed -i "s/#PermitRootLogin prohibit-password/PermitRootLogin no/" /etc/ssh/sshd_config
+
 EXPOSE 22
 
 ## runtime
-ENTRYPOINT ["bash", "-c", "/usr/sbin/sshd -D"]
+ENTRYPOINT ["/usr/sbin/sshd", "-D", "-e"]

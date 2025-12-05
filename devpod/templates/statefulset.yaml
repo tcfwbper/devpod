@@ -87,7 +87,12 @@ spec:
       enableServiceLinks: {{ .Values.enableServiceLinks }}
       initContainers:
         - name: init-workspace
-          image: {{ if .Values.docker.useHostSocket }}{{ include "devpod.initWorkspace.dockerSocketImage" . }}{{ else }}{{ include "devpod.initWorkspace.image" . }}{{ end }}
+          image: {{ include "devpod.initWorkspace.image" . }}
+          {{- if and (.Values.docker.enabled) (not .Values.docker.useHostSocket) }}
+          args:
+          - --docker-host
+          - tcp://0.0.0.0:2375
+          {{- end }}
           imagePullPolicy: {{ .Values.initWorkspace.image.pullPolicy | quote }}
           securityContext: {{- .Values.initWorkspace.containerSecurityContext | toYaml | nindent 12 }}
           {{- if .Values.initWorkspace.resources }}
@@ -106,8 +111,8 @@ spec:
         {{- end }}
       containers:
         - name: devpod
-          image: {{ include "devpod.image" . }}
-          imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+          image: {{ if eq .Values.operatingSystem "alpine" }}{{ include "devpod.alpine.image" . }}{{ else }}{{ include "devpod.ubuntu.image" . }}{{ end }}
+          imagePullPolicy: {{ if eq .Values.operatingSystem "alpine" }}{{ .Values.alpine.image.pullPolicy | quote }}{{ else }}{{ .Values.ubuntu.image.pullPolicy | quote }}{{ end }}
           {{- if .Values.containerSecurityContext.enabled }}
           securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.containerSecurityContext "context" $) | nindent 12 }}
           {{- end }}
@@ -128,25 +133,41 @@ spec:
                   - /bin/bash
                   - -c
                   - |
+                    ## Modify default user
                     usermod -l {{ .Values.auth.username }} user
                     usermod -d /home/{{ .Values.auth.username }} {{ .Values.auth.username }}
                     groupmod -n {{ .Values.auth.username }} user
                     usermod -g {{ .Values.auth.username }} {{ .Values.auth.username }}
                     chown {{ .Values.auth.username }} /home/{{ .Values.auth.username }}
                     chgrp {{ .Values.auth.username }} /home/{{ .Values.auth.username }}
-                    echo "{{ .Values.auth.username }}:${UBUNTU_PASSWORD}" | chpasswd
+                    echo "{{ .Values.auth.username }}:${DEVPOD_PASSWORD}" | chpasswd
+
+                    ## handle docker group
                     {{- if and (.Values.docker.enabled) (.Values.docker.useHostSocket) }}
-                    GID=$(ls -n "/var/run/docker.sock" | awk '{print $4}')
-                    if getent group docker > /dev/null; then
-                        groupdel docker
-                        echo "the old docker group was deleted."
+                    SOCKET_PATH="/var/run/docker.sock"
+                    SOCKET_GID=$(stat -c '%g' "$SOCKET_PATH")
+                    SOCKET_GROUP=$(stat -c '%G' "$SOCKET_PATH")
+                    if getent group "$SOCKET_GROUP" > /dev/null 2>&1; then
+                        EXISTING_GID=$(getent group "$SOCKET_GROUP" | cut -d: -f3)
+                        if [ "$EXISTING_GID" = "$SOCKET_GID" ]; then
+                            echo "Group $SOCKET_GROUP with correct GID $SOCKET_GID already exists"
+                        else
+                            echo "Group $SOCKET_GROUP exists but with wrong GID $EXISTING_GID, deleting..."
+                            groupdel "$SOCKET_GROUP"
+                            groupadd -g "$SOCKET_GID" "$SOCKET_GROUP"
+                            echo "Recreated group $SOCKET_GROUP with GID $SOCKET_GID"
+                        fi
+                    else
+                        groupadd -g "$SOCKET_GID" "$SOCKET_GROUP"
+                        echo "Created group $SOCKET_GROUP with GID $SOCKET_GID"
                     fi
-                    groupadd -g "$GID" docker
-                    echo "the docker group with GID $GID was created."
-                    usermod -aG docker {{ .Values.auth.username }}
-                    echo "Added {{ .Values.auth.username }} to the docker group with GID $GID."
+                    usermod -aG "$SOCKET_GROUP" {{ .Values.auth.username }}
+                    echo "Added {{ .Values.auth.username }} to group $SOCKET_GROUP"
                     {{- end }}
+
+                    ## Install additional packages
                     {{- include "devpod.packages" . | nindent 20 }}
+
                     {{- if .Values.lifecycleHooks.postStart }}
                     {{ .Values.lifecycleHooks.postStart.exec.command | join " && " }}
                     {{- end }}
@@ -154,7 +175,7 @@ spec:
             preStop: {{- include "common.tplvalues.render" (dict "value" .Values.lifecycleHooks.preStop "context" $) | nindent 14 }}
           {{- end }}
           env:
-            - name: UBUNTU_PASSWORD
+            - name: DEVPOD_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ include "devpod.secretPasswordName" . }}

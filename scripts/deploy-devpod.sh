@@ -20,9 +20,37 @@ cd "$(dirname "$(realpath "$0")")/.."
 RED='\033[0;31m'
 NC='\033[0m' # (reset)
 
+# OS
+while true; do
+  echo "Select type of your operating system:"
+  echo "  1) Ubuntu (default)"
+  echo "  2) Alpine"
+  read -p "OS type (1-2): " OS_TYPE
+  if [[ -z $OS_TYPE ]]; then
+    OS_TYPE=1
+  fi
+  if [[ $OS_TYPE == "1" ]]; then
+    OS="ubuntu"
+    echo "Selected OS: $OS"
+    break
+  elif [[ $OS_TYPE == "2" ]]; then
+    OS="alpine"
+    echo "Selected OS: $OS"
+    break
+  else
+    echo -e "Please enter ${RED}1${NC} or ${RED}2${NC}."
+  fi
+done
+
 # username
-echo -e "Fill out your ${RED}devpod username${NC}."
-read -p "Username: " USERNAME
+while true; do
+  echo -e "Fill out your ${RED}devpod username${NC}."
+  read -p "Username: " USERNAME
+  if [[ -n $USERNAME ]]; then
+      echo "Username: $USERNAME."
+      break
+  fi
+done
 
 # password
 while true; do
@@ -31,10 +59,10 @@ while true; do
     echo
     read -sp "Retype password: " PASSWORD_CHECK
     echo
-    if [[ $PASSWORD == $PASSWORD_CHECK ]]; then
+    if [[ $PASSWORD == $PASSWORD_CHECK && -n $PASSWORD ]]; then
       break
     fi
-    echo "Password mismatch."
+    echo "Password mismatch or not defined."
 done
 
 # nodeport
@@ -107,16 +135,19 @@ if [[ -z $USE_HOST_SOCKET ]]; then
 fi
 
 # other arguments
-CHART_VERSION="1.1.0"
+CHART_VERSION="1.2.0"
 RELEASE="$USERNAME-devpod"
-NAMESPACE=devpod
+NAMESPACE="devpod"
 SERVICE_TYPE="NodePort"
 
 helm upgrade $RELEASE oci://ghcr.io/tcfwbper/helm/devpod --version $CHART_VERSION -n $NAMESPACE --install --create-namespace \
     --set global.storageClass=$STORAGE_CLASS \
+    --set operatingSystem=$OS \
     --set auth.username=$USERNAME \
     --set auth.password=$PASSWORD \
     --set service.type=$SERVICE_TYPE \
     --set service.nodePorts.ssh=$SSH_NODEPORT \
     --set docker.enabled=$ENABLE_DOCKER \
-    --set docker.useHostSocket=$USE_HOST_SOCKET
+    --set docker.useHostSocket=$USE_HOST_SOCKET \
+    --set packages.apt[0]=screen \
+    --set packages.apk[0]=screen

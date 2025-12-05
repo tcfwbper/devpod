@@ -13,13 +13,32 @@
 # limitations under the License.
 # ==============================================================================
 
+docker_host=
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --docker-host)
+            if [ -z "$2" ] || [[ "$2" == --* ]]; then
+                echo "Error: --docker-host requires a value"
+                exit 1
+            fi
+            docker_host="$2"
+            shift 2
+            ;;
+        *)
+            shift
+            ;;
+    esac
+done
+
 chmod 755 /tmp/workspace
 
 # bashrc
 if [ ! -f "/tmp/workspace/.bashrc" ]; then
     cp .bashrc /tmp/workspace/.bashrc
     chmod 666 /tmp/workspace/.bashrc
-    echo "export DOCKER_HOST=\"tcp://0.0.0.0:2375\"" >> /tmp/workspace/.bashrc
+    if [ -n "$docker_host" ]; then
+        echo "export DOCKER_HOST=$docker_host" >> /tmp/workspace/.bashrc
+    fi
 fi
 # bash_profile
 if [ ! -f "/tmp/workspace/.bash_profile" ]; then

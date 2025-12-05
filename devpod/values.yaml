@@ -37,37 +37,73 @@ global:
       ## @param global.compatibility.openshift.adaptSecurityContext Adapt the securityContext sections of the deployment to make them compatible with Openshift restricted-v2 SCC: remove runAsUser, runAsGroup and fsGroup and let the platform use their allowed default IDs. Possible values: auto (apply if the detected running cluster is Openshift), force (perform the adaptation always), disabled (do not perform adaptation)
       ##
       adaptSecurityContext: auto
-## @section DevPod Image Parameters
-## DevPod image version
-## @param image.registry [default: REGISTRY_NAME] Development environment image registry
-## @param image.repository [default: REPOSITORY_NAME/dev-env] Development environment image repository
-## @param image.tag Development environment image tag (rebuild your image and set this value)
-## @param image.digest Development environment image digest in the way sha256:aa.... Please note this parameter, if set, will override the tag
-## @param image.pullPolicy Development environment image pull policy
-## @param image.pullSecrets Specify docker-registry secret names as an array
-## @param image.debug Set to true if you would like to see extra information on logs
+## @section DevPod OS Definition and Image Parameters
+## DevPod OS definition
+## @param operatingSystem Operating system for DevPod. Allowed values: ubuntu, alpine
 ##
-image:
-  registry: docker.io
-  repository: tcfwbper/dev-env
-  tag: 1.0.0
-  digest: ""
-  ## set to true if you would like to see extra information on logs
-  ## It turns BASH and/or NAMI debugging in the image
-  ##
-  debug: false
-  ## Specify a imagePullPolicy
-  ## ref: https://kubernetes.io/docs/concepts/containers/images/#pre-pulled-images
-  ##
-  pullPolicy: IfNotPresent
-  ## Optionally specify an array of imagePullSecrets.
-  ## Secrets must be manually created in the namespace.
-  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
-  ## Example:
-  ## pullSecrets:
-  ##   - myRegistryKeySecretName
-  ##
-  pullSecrets: []
+operatingSystem: "ubuntu"
+## DevPod Ubuntu image version
+## @param ubuntu.image.registry [default: REGISTRY_NAME] Development environment image registry
+## @param ubuntu.image.repository [default: REPOSITORY_NAME/dev-env] Development environment image repository
+## @param ubuntu.image.tag Development environment image tag (rebuild your image and set this value)
+## @param ubuntu.image.digest Development environment image digest in the way sha256:aa.... Please note this parameter, if set, will override the tag
+## @param ubuntu.image.pullPolicy Development environment image pull policy
+## @param ubuntu.image.pullSecrets Specify docker-registry secret names as an array
+## @param ubuntu.image.debug Set to true if you would like to see extra information on logs
+##
+ubuntu:
+  image:
+    registry: docker.io
+    repository: tcfwbper/dev-env
+    tag: 1.1.0-ubuntu
+    digest: ""
+    ## set to true if you would like to see extra information on logs
+    ## It turns BASH and/or NAMI debugging in the image
+    ##
+    debug: false
+    ## Specify a imagePullPolicy
+    ## ref: https://kubernetes.io/docs/concepts/containers/images/#pre-pulled-images
+    ##
+    pullPolicy: IfNotPresent
+    ## Optionally specify an array of imagePullSecrets.
+    ## Secrets must be manually created in the namespace.
+    ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+    ## Example:
+    ## pullSecrets:
+    ##   - myRegistryKeySecretName
+    ##
+    pullSecrets: []
+## DevPod Alpine image version
+## @param alpine.image.registry [default: REGISTRY_NAME] Development environment image registry
+## @param alpine.image.repository [default: REPOSITORY_NAME/dev-env] Development environment image repository
+## @param alpine.image.tag Development environment image tag (rebuild your image and set this value)
+## @param alpine.image.digest Development environment image digest in the way sha256:aa.... Please note this parameter, if set, will override the tag
+## @param alpine.image.pullPolicy Development environment image pull policy
+## @param alpine.image.pullSecrets Specify docker-registry secret names as an array
+## @param alpine.image.debug Set to true if you would like to see extra information on logs
+##
+alpine:
+  image:
+    registry: docker.io
+    repository: tcfwbper/dev-env
+    tag: 1.1.0-alpine
+    digest: ""
+    ## set to true if you would like to see extra information on logs
+    ## It turns BASH and/or NAMI debugging in the image
+    ##
+    debug: false
+    ## Specify a imagePullPolicy
+    ## ref: https://kubernetes.io/docs/concepts/containers/images/#pre-pulled-images
+    ##
+    pullPolicy: IfNotPresent
+    ## Optionally specify an array of imagePullSecrets.
+    ## Secrets must be manually created in the namespace.
+    ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+    ## Example:
+    ## pullSecrets:
+    ##   - myRegistryKeySecretName
+    ##
+    pullSecrets: []
 ## @section Common Parameters
 ##
 
@@ -150,7 +186,7 @@ auth:
   ## existingPasswordSecret: name-of-existing-secret
   ##
   existingPasswordSecret: ""
-  ## @param auth.existingSecretPasswordKey [default: ubuntu-password] Password key to be retrieved from existing secret
+  ## @param auth.existingSecretPasswordKey [default: devpod-password] Password key to be retrieved from existing secret
   ## NOTE: ignored unless `auth.existingSecret` parameter is set
   ##
   existingSecretPasswordKey: ""
@@ -465,11 +501,15 @@ sidecars: []
 ## It's a fast way to add packages without rebuilding the image.
 ## You aren't recommended using this for heavy packages, as it may lead to long pod startup times and block your network.
 ## In the case of heavy packages, you should rebuild the image with the required packages.
-## @param packages.apt APT packages to install in DevPod pods.
+## @param packages.apt APT packages to install in Ubuntu DevPod pods.
+## @param packages.apk APK packages to install in Alpine DevPod pods.
 ## @param packages.pip PIP packages to install in DevPod pods.
 ## Example:
 ## packages:
 ##   apt:
+##     - package1
+##     - package2
+##   apk:
 ##     - package1
 ##     - package2
 ##   pip:
@@ -478,6 +518,7 @@ sidecars: []
 ##
 packages:
   apt: []
+  apk: []
   pip: []
 ## DevPod pods ServiceAccount
 ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
@@ -658,32 +699,7 @@ initWorkspace:
   image:
     registry: docker.io
     repository: tcfwbper/dev-env
-    tag: "1.0.0-init-workspace"
-    digest: ""
-    ## Specify a imagePullPolicy
-    ## ref: https://kubernetes.io/docs/concepts/containers/images/#pre-pulled-images
-    ##
-    pullPolicy: IfNotPresent
-    ## Optionally specify an array of imagePullSecrets.
-    ## Secrets must be manually created in the namespace.
-    ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
-    ## Example:
-    ## pullSecrets:
-    ##   - myRegistryKeySecretName
-    ##
-    pullSecrets: []
-  ## Init Workspace image version
-  ## @param initWorkspace.dockerSocketImage.registry [default: REGISTRY_NAME] Init Workspace image registry
-  ## @param initWorkspace.dockerSocketImage.repository [default: REPOSITORY_NAME/dev-env] Init Workspace image repository
-  ## @param initWorkspace.dockerSocketImage.tag Init Workspace image tag (rebuild your image and set this value)
-  ## @param initWorkspace.dockerSocketImage.digest Init Workspace image digest in the way sha256:aa.... Please note this parameter, if set, will override the tag
-  ## @param initWorkspace.dockerSocketImage.pullPolicy Init Workspace image pull policy
-  ## @param initWorkspace.dockerSocketImage.pullSecrets Specify docker-registry secret names as an array
-  ##
-  dockerSocketImage:
-    registry: docker.io
-    repository: tcfwbper/dev-env
-    tag: "1.0.0-init-workspace-docker-socket"
+    tag: "1.0.1-init-workspace"
     digest: ""
     ## Specify a imagePullPolicy
     ## ref: https://kubernetes.io/docs/concepts/containers/images/#pre-pulled-images

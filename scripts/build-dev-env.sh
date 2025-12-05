@@ -19,13 +19,34 @@ cd "$(dirname "$(realpath "$0")")/.."
 ## env: image
 CR="docker.io"
 IMAGE_NAME="tcfwbper/dev-env"
-IMAGE_TAG="1.0.0"
+IMAGE_TAG="1.1.0"
+# OS
+while true; do
+  echo "Select type of your operating system:"
+  echo "  1) Ubuntu (default)"
+  echo "  2) Alpine"
+  read -p "OS type (1-2): " OS_TYPE
+  if [[ -z $OS_TYPE ]]; then
+    OS_TYPE=1
+  fi
+  if [[ $OS_TYPE == "1" ]]; then
+    OS="ubuntu"
+    echo "Selected OS: $OS"
+    break
+  elif [[ $OS_TYPE == "2" ]]; then
+    OS="alpine"
+    echo "Selected OS: $OS"
+    break
+  else
+    echo -e "Please enter ${RED}1${NC} or ${RED}2${NC}."
+  fi
+done
 
 # Generate a random password for the development environment
 PWD_ARG=$(openssl rand -base64 20)
 
 ## Build the Docker image
-docker build --build-arg PWD_ARG="$PWD_ARG" -t ${CR}/${IMAGE_NAME}:${IMAGE_TAG} docker/dev-env/
+docker build --build-arg PWD_ARG="$PWD_ARG" -t ${CR}/${IMAGE_NAME}:${IMAGE_TAG}-${OS} -f docker/dev-env/${OS}.Dockerfile .
 ## Push the Docker image
 docker login ${CR}
-docker push ${CR}/${IMAGE_NAME}:${IMAGE_TAG}
+docker push ${CR}/${IMAGE_NAME}:${IMAGE_TAG}-${OS}
