@@ -13,7 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 ## Password
 ARG PWD_ARG
@@ -31,9 +31,8 @@ ENV UBUNTU_ACCOUNT="user" \
     GROUP_ID="1001"
 ## env: version of tools
 ENV DOCKER_COMPOSE_VERSION="v2.29.7" \
-    PYTHON_PACKAGE_NAME="python3.10" \
     KUBECTL_VERSION="v1.31.1" \
-    K9S_VERSION="v0.50.2"
+    K9S_VERSION="v0.50.6"
 
 ## install: apt packages
 RUN apt update && apt install -y \
@@ -51,7 +50,7 @@ RUN apt update && apt install -y \
 RUN apt install -y software-properties-common && \
     add-apt-repository -y ppa:deadsnakes/ppa && \
     apt update && \
-    apt install -y $PYTHON_PACKAGE_NAME python3-pip
+    apt install -y python3 python3-pip python3-dev python3-venv
 
 ## account: user
 RUN groupadd -g $GROUP_ID $UBUNTU_ACCOUNT && \
